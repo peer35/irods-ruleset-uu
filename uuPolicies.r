@@ -6,11 +6,6 @@
 # \copyright Copyright (c) 2015-2018, Utrecht University. All rights reserved.
 # \license   GPLv3, see LICENSE.
 
-# reroute msiExecCmd to msiSecureExecCmd
-msiExecCmd(*cmd, *argv, *addr, *hint, *resource, *out) {
-	msiSecureExecCmd(*cmd, *argv, *addr, *hint, *resource, *out);
-}
-
 # \brief Restrict access to OS callouts
 #
 # \param[in]		cmd  name of executable
@@ -22,10 +17,21 @@ acPreProcForExecCmd(*cmd, *args, *addr, *hint) {
 		succeed;
 	}
 
+	# permit local commands starting with "admin-", when the first argument is the current user
+	msiSubstr(*cmd, "0", "6", *prefix);
+	if (*prefix == "admin-" && *addr == "" && *hint == "") {
+		*name = uuClientFullName;
+		# Name is guaranteed to contain no quoting or escaping characters.
+		# See uuUserNameIsValid in uuGroupPolicyChecks.r
+		if (*args == *name || *args like "*name *") {
+			succeed;
+		}
+	}
+
 	# permit all local commands starting with "scheduled-"
-	msiSubstr(*cmd, "0", "10", *scheduled);
+	msiSubstr(*cmd, "0", "10", *prefix);
 	if (*args == "" && *addr == "" && *hint == "" &&
-	    *scheduled == "scheduled-") {
+	    *prefix == "scheduled-") {
 		succeed;
 	}
 
