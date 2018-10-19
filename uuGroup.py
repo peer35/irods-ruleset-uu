@@ -49,6 +49,7 @@ def getGroupData(callback):
         if result.continueInx == 0:
             break
         ret_val = callback.msiGetMoreRows(query, result, 0)
+    callback.msiCloseGenQuery(query, result)
 
     # Second query: obtain list of groups with memberships.
     ret_val = callback.msiMakeGenQuery(
@@ -90,6 +91,7 @@ def getGroupData(callback):
         if result.continueInx == 0:
             break
         ret_val = callback.msiGetMoreRows(query, result, 0)
+    callback.msiCloseGenQuery(query, result)
 
     return groups.values()
 
@@ -114,6 +116,7 @@ def getCategories(callback):
         if result.continueInx == 0:
             break
         ret_val = callback.msiGetMoreRows(query, result, 0)
+    callback.msiCloseGenQuery(query, result)
 
     return categories
 
@@ -161,6 +164,7 @@ def getSubcategories(callback, category):
         if result.continueInx == 0:
             break
         ret_val = callback.msiGetMoreRows(query, result, 0)
+    callback.msiCloseGenQuery(query, result)
 
     return list(categories)
 
@@ -195,3 +199,42 @@ def uuGroupGetCategoriesJson(rule_args, callback, rei):
 #
 def uuGroupGetSubcategoriesJson(rule_args, callback, rei):
     callback.writeString("stdout", json.dumps(getSubcategories(callback, rule_args[0])))
+
+
+# \brief Retrieve config value from credentials store.
+#
+def credentialsStoreGet(key):
+    config = json.loads(open('/var/lib/irods/.credentials_store/store_config.json').read())
+    return config[key]
+
+
+import requests
+
+# \brief Call External User Service API to add new user
+#
+# \param[in] username
+# \param[in] creatorUser
+# \param[in] creatorZone
+#
+def provisionExternalUser(callback, username, creatorUser, creatorZone):
+    eus_fqdn = credentialsStoreGet("yoda_eus_fqdn")
+    eus_api_secret = credentialsStoreGet("eus_api_secret")
+
+    url = 'https://' + eus_fqdn + '/api/user/add'
+
+    data = {}
+    data['username'] = username
+    data['creator_user'] = creatorUser
+    data['creator_zone'] = creatorZone
+
+    response = requests.post(url, data=json.dumps(data),
+                             headers={'X-Yoda-External-User-Secret':
+                                      eus_api_secret},
+                             verify=False)
+
+    return str(response.status_code)
+
+# \brief Provision external user
+#
+def uuProvisionExternalUser(rule_args, callback, rei):
+    callback.writeString("serverLog", provisionExternalUser(callback, rule_args[0], rule_args[1], rule_args[2]))
