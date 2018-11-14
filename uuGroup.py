@@ -218,9 +218,10 @@ import requests
 #
 def provisionExternalUser(callback, username, creatorUser, creatorZone):
     eus_fqdn = credentialsStoreGet("yoda_eus_fqdn")
+    eus_port = credentialsStoreGet("yoda_eus_port")
     eus_api_secret = credentialsStoreGet("eus_api_secret")
 
-    url = 'https://' + eus_fqdn + '/api/user/add'
+    url = 'https://' + eus_fqdn + ':' + eus_port + '/api/user/add'
 
     data = {}
     data['username'] = username
@@ -238,3 +239,31 @@ def provisionExternalUser(callback, username, creatorUser, creatorZone):
 #
 def uuProvisionExternalUser(rule_args, callback, rei):
     callback.writeString("serverLog", provisionExternalUser(callback, rule_args[0], rule_args[1], rule_args[2]))
+
+# \brief Call External User Service API to remove user
+#
+# \param[in] username
+# \param[in] userzone
+#
+def removeExternalUser(callback, username, userzone):
+    eus_fqdn = credentialsStoreGet("yoda_eus_fqdn")
+    eus_port = credentialsStoreGet("yoda_eus_port")
+    eus_api_secret = credentialsStoreGet("eus_api_secret")
+
+    url = 'https://' + eus_fqdn + ':' + eus_port + '/api/user/delete'
+
+    data = {}
+    data['username'] = username
+    data['userzone'] = userzone
+
+    response = requests.post(url, data=json.dumps(data),
+                             headers={'X-Yoda-External-User-Secret':
+                                      eus_api_secret},
+                             verify=False)
+
+    return str(response.status_code)
+
+# \brief Remove external user
+#
+def uuRemoveExternalUser(rule_args, callback, rei):
+    callback.writeString("serverLog", removeExternalUser(callback, rule_args[0], rule_args[1]))

@@ -815,6 +815,25 @@ uuGroupRemove(*groupName, *status, *message) {
 	}
 }
 
+# \brief Check that a user is external.
+#
+# \param[in] userName   the user to check
+#
+uuExternalUser(*userName) {
+	*nameAndDomain = split(*userName, "@");
+	if (size(*nameAndDomain) == 2) {
+		*domain = elem(*nameAndDomain, 1);
+		if (*domain != "uu.nl" && *domain not like "*.uu.nl") {
+			# is external
+			true;
+		} else {
+			false;
+		}
+	} else {
+		false;
+	}
+}
+
 # \brief Add a user to a group.
 #
 # \param[in]  groupName
@@ -841,6 +860,11 @@ uuGroupUserAdd(*groupName, *user, *status, *message) {
 				*message = *reason;
 			}
 			succeed; # Return here (don't fail as that would ruin the status and error message).
+		}
+
+		# Provision external user
+		if (uuExternalUser(*userName)) {
+			uuProvisionExternalUser(*userName, $userNameClient, $rodsZoneClient);
 		}
 
 		# Send user invitation mail.
