@@ -2,8 +2,10 @@
 # \brief     Functions for group management and group queries.
 # \author    Felix Croes
 # \author    Lazlo Westerhof
-# \copyright Copyright (c) 2018 Utrecht University. All rights reserved.
+# \copyright Copyright (c) 2018-2019 Utrecht University. All rights reserved.
 # \license   GPLv3, see LICENSE.
+
+import json
 
 # \brief Return groups and related data.
 #
@@ -217,28 +219,62 @@ import requests
 # \param[in] creatorZone
 #
 def provisionExternalUser(callback, username, creatorUser, creatorZone):
-    eus_fqdn = credentialsStoreGet("yoda_eus_fqdn")
-    eus_port = credentialsStoreGet("yoda_eus_port")
+    eus_api_fqdn = credentialsStoreGet("eus_api_fqdn")
+    eus_api_port = credentialsStoreGet("eus_api_port")
     eus_api_secret = credentialsStoreGet("eus_api_secret")
 
-    url = 'https://' + eus_fqdn + ':' + eus_port + '/api/user/add'
+    url = 'https://' + eus_api_fqdn + ':' + eus_api_port + '/api/user/add'
 
     data = {}
     data['username'] = username
     data['creator_user'] = creatorUser
     data['creator_zone'] = creatorZone
 
-    response = requests.post(url, data=json.dumps(data),
-                             headers={'X-Yoda-External-User-Secret':
-                                      eus_api_secret},
-                             verify=False)
+    try:
+        response = requests.post(url, data=json.dumps(data),
+                                 headers={'X-Yoda-External-User-Secret':
+                                          eus_api_secret},
+                                 timeout=5,
+                                 verify=False)
+    except requests.ConnectionError or requests.ConnectTimeout:
+        return -1
 
-    return str(response.status_code)
+    return response.status_code
+
 
 # \brief Provision external user
 #
 def uuProvisionExternalUser(rule_args, callback, rei):
-    callback.writeString("serverLog", provisionExternalUser(callback, rule_args[0], rule_args[1], rule_args[2]))
+    status = 1
+    message = "An internal error occured."
+
+    status = provisionExternalUser(callback, rule_args[0], rule_args[1], rule_args[2])
+
+    if status < 0:
+        message = """Error: Could not connect to external user service.\n
+                     Please contact a Yoda administrator"""
+    elif status == 400:
+        message = """Error: Invalid request to external user service.\n"
+                     Please contact a Yoda administrator"""
+    elif status == 401:
+        message = """Error: Invalid user credentials for external user service.\n"
+                     Please contact a Yoda administrator"""
+    elif status == 403:
+        message = """Error: Unauthorized request to external user service.\n"
+                     Please contact a Yoda administrator"""
+    elif status == 405:
+        message = """Error: Invalid input for external user service.\n"
+                     Please contact a Yoda administrator"""
+    elif status == 415:
+        message = """Error: Invalid input MIME type for external user service.\n"
+                     Please contact a Yoda administrator"""
+    elif status == 201 or status == 409:
+        status = 0
+        message = ""
+
+    rule_args[3] = status
+    rule_args[4] = message
+
 
 # \brief Call External User Service API to remove user
 #
@@ -246,11 +282,11 @@ def uuProvisionExternalUser(rule_args, callback, rei):
 # \param[in] userzone
 #
 def removeExternalUser(callback, username, userzone):
-    eus_fqdn = credentialsStoreGet("yoda_eus_fqdn")
-    eus_port = credentialsStoreGet("yoda_eus_port")
+    eus_api_fqdn = credentialsStoreGet("eus_api_fqdn")
+    eus_api_port = credentialsStoreGet("eus_api_port")
     eus_api_secret = credentialsStoreGet("eus_api_secret")
 
-    url = 'https://' + eus_fqdn + ':' + eus_port + '/api/user/delete'
+    url = 'https://' + eus_api_fqdn + ':' + eus_api_port + '/api/user/delete'
 
     data = {}
     data['username'] = username

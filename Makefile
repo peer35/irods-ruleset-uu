@@ -1,4 +1,9 @@
-# Makefile for building and installing the Utrecht University iRODS ruleset
+# \file      Makefile
+# \brief     Makefile for building and installing the Utrecht University iRODS ruleset
+# \author    Lazlo Westerhof
+# \author    Paul Frederiks
+# \copyright Copyright (c) 2017-2019, Utrecht University. All rights reserved.
+# \license   GPLv3, see LICENSE.
 #
 # Please note the following:
 #
@@ -12,30 +17,27 @@
 #   'development' for dev/test environments.
 #
 # - For the 'install' make target to work, you should place this ruleset
-#   directory in the folder 'iRODS/server/config/reConfigs'. Don't forget to
+#   directory in the folder '/etc/irods/'. Don't forget to
 #   append the ruleset name ($RULESET_NAME minus the '.re' extension) to the
-#   reRuleSet line in server/config/server.config.
+#   rulesets in /etc/irods/server_config.json.
 #
 # make update  - pull changes from git remote, updates .r files
 # make install - install ruleset (concatenated .r files) into the parent directory
 
 # Input files. Exclude all test rules in ./tests
-
-RULE_FILES ?= $(shell find . -path "./tests" -prune -o -path "./tools" -prune -o -type f -iname '*.r' -print)
-PYRULE_FILES ?= $(shell find . -path "./tests" -prune -o -path "./tools" -prune -o -type f -iname 'uu*.py' -print)
+RULE_FILES ?= $(shell find . -path "./tests" -prune -o -path "./tools" -prune -o -type f -iname '*.r' -print | sort)
+PYRULE_FILES ?= $(shell find . -path "./tests" -prune -o -path "./tools" -prune -o -type f -iname 'uu*.py' -print | sort)
 
 # Output files.
-
 RULESET_NAME ?= rules-uu.re
 RULESET_FILE := $(RULESET_NAME)
 DEBUG_FILE := $(RULESET_NAME).debug
-PYRULESET_NAME ?= pyrules_uu
+PYRULESET_NAME ?= rules_uu.py
 PYRULESET_FILE := $(PYRULESET_NAME)
 
 INSTALL_DIR  ?= ..
 
 # Make targets.
-
 all: $(RULESET_FILE) $(PYRULESET_FILE)
 
 $(RULESET_FILE): $(RULE_FILES)
@@ -47,7 +49,6 @@ $(PYRULESET_FILE): $(PYRULE_FILES)
 install: $(RULESET_FILE) $(PYRULESET_FILE)
 	cp --backup $(RULESET_FILE) $(INSTALL_DIR)/$(RULESET_NAME)
 	cp --backup $(PYRULESET_FILE) $(INSTALL_DIR)/$(PYRULESET_NAME)
-	cat $(INSTALL_DIR)/core.py.template $(PYRULESET_FILE) > $(INSTALL_DIR)/core.py
 
 clean:
 	rm -f $(RULESET_FILE) $(PYRULESET_FILE)
@@ -62,4 +63,3 @@ debug: $(DEBUG_FILE)
 
 debug-install: $(DEBUG_FILE)
 	cp --backup $(DEBUG_FILE) $(INSTALL_DIR)/$(RULESET_NAME)
-
