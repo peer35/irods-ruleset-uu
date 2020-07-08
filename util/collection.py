@@ -15,6 +15,7 @@ try:
 except ImportError:
     pass
 
+
 def exists(callback, path):
     """Check if a collection with the given path exists."""
     return len(list(genquery.row_iterator(

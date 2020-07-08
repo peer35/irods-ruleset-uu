@@ -16,6 +16,7 @@ try:
 except ImportError:
     pass
 
+
 def exists(callback, path):
     """Check if a data object with the given path exists."""
     return len(list(genquery.row_iterator(
