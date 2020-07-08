@@ -7,6 +7,10 @@ Rather, it provides utility Python functions to other rules.
 
 __copyright__ = 'Copyright (c) 2019-2020, Utrecht University'
 __license__   = 'GPLv3, see LICENSE'
+__version__   = '1.6.1'
+__author__    =  ('Harm de Raaff'
+              + ', Chris Smeele'
+              + ', Lazlo Westerhof')
 
 # Make sure that importing * from this package gives (qualified) access to all
 # contained modules.
