@@ -20,7 +20,7 @@ requirements = [
 ]
 
 setup(
-    name="yoda_util",
+    name="irods_util",
     version=__version__,
     author=__author__,
     description=(
