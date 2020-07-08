@@ -7,7 +7,10 @@ __license__   = 'GPLv3, see LICENSE'
 from collections import OrderedDict
 from enum import Enum
 
-import irods_types
+try:
+    import irods_types
+except ImportError:
+    pass
 
 MAX_SQL_ROWS = 256
 

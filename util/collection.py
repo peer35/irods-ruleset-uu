@@ -7,10 +7,13 @@ __license__   = 'GPLv3, see LICENSE'
 import itertools
 
 import genquery
-import irods_types
 import msi
 from query import Query
 
+try:
+    import irods_types
+except ImportError:
+    pass
 
 def exists(callback, path):
     """Check if a collection with the given path exists."""

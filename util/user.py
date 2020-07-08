@@ -7,8 +7,12 @@ __license__   = 'GPLv3, see LICENSE'
 from collections import namedtuple
 
 import genquery
-import session_vars
 from query import Query
+
+try:
+    import session_vars
+except ImportError:
+    pass
 
 # User is a tuple consisting of a name and a zone, which stringifies into 'user#zone'.
 User = namedtuple('User', ['name', 'zone'])

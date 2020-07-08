@@ -20,11 +20,11 @@ requirements = [
 ]
 
 setup(
-    name="irods_util",
+    name="util",
     version=__version__,
     author=__author__,
     description=(
-        "Utilities for Yoda."
+        "Python utilities for iRODS."
     ),
     long_description=long_description,
     long_description_content_type="text/markdown",

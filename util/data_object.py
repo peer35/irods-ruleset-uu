@@ -7,11 +7,14 @@ __license__   = 'GPLv3, see LICENSE'
 import constants
 import error
 import genquery
-import irods_types
 import msi
 import pathutil
 from query import Query
 
+try:
+    import irods_types
+except ImportError:
+    pass
 
 def exists(callback, path):
     """Check if a data object with the given path exists."""

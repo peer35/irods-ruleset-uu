@@ -7,7 +7,11 @@ __license__   = 'GPLv3, see LICENSE'
 import itertools
 from collections import namedtuple
 
-import irods_types
+try:
+    import irods_types
+except ImportError:
+    pass
+
 import msi
 import pathutil
 from query import Query
